@@ -1,17 +1,28 @@
 #include <iostream>
+#include <string>
 
 #include "kvstore.hpp"
+#include "parser.hpp"
 
 int main() {
     KVStore store;
+    std::cout << "MiniKV ready. Commands: SET, GET, DEL, EXISTS, SIZE, QUIT\n";
 
-    store.set("name", "Rihem");
-    auto v = store.get("name");
-    std::cout << "name = " << (v ? *v : "(not found)") << "\n";
+    std::string line;
+    while (true) {
+        std::cout << "> " << std::flush;
+        if (!std::getline(std::cin, line)) {
+            break;  // end of input (Ctrl+D)
+        }
+        if (line == "QUIT" || line == "quit") {
+            break;
+        }
+        std::string reply = handle_command(store, line);
+        if (!reply.empty()) {
+            std::cout << reply << "\n";
+        }
+    }
 
-    store.del("name");
-    auto v2 = store.get("name");
-    std::cout << "after delete: " << (v2 ? *v2 : "(not found)") << "\n";
-
+    std::cout << "Bye.\n";
     return 0;
 }
