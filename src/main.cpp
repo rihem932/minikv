@@ -1,26 +1,35 @@
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 #include "kvstore.hpp"
 #include "parser.hpp"
 
-int main() {
-    KVStore store;
-    std::cout << "MiniKV ready. Commands: SET, GET, DEL, EXISTS, SIZE, QUIT\n";
+int main(int argc, char* argv[]) {
+    const std::string log_path = (argc > 1) ? argv[1] : "minikv.log";
 
-    std::string line;
-    while (true) {
-        std::cout << "> " << std::flush;
-        if (!std::getline(std::cin, line)) {
-            break;  // end of input (Ctrl+D)
+    try {
+        KVStore store(log_path);
+        std::cout << "MiniKV ready (" << store.size() << " keys loaded from " << log_path
+                  << "). Commands: SET, GET, DEL, EXISTS, SIZE, QUIT\n";
+
+        std::string line;
+        while (true) {
+            std::cout << "> " << std::flush;
+            if (!std::getline(std::cin, line)) {
+                break;  // end of input (Ctrl+D)
+            }
+            if (line == "QUIT" || line == "quit") {
+                break;
+            }
+            std::string reply = handle_command(store, line);
+            if (!reply.empty()) {
+                std::cout << reply << "\n";
+            }
         }
-        if (line == "QUIT" || line == "quit") {
-            break;
-        }
-        std::string reply = handle_command(store, line);
-        if (!reply.empty()) {
-            std::cout << reply << "\n";
-        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+        return 1;
     }
 
     std::cout << "Bye.\n";
